@@ -6,9 +6,12 @@ from scipy import stats
 
 from collections import Counter
 import matplotlib.pyplot as plt
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, AgglomerativeClustering
 from sklearn.metrics import silhouette_score
 import numpy as np
+
+from scipy.cluster.hierarchy import linkage
+from scipy.cluster.hierarchy import dendrogram
 
 
 def plot_data(product_per_user_li):
@@ -77,6 +80,20 @@ def analyze_clusters_product_count(labels, user_product_dic, id_user_dic):
     for k, v in product_len_dic.items():
         print('cluster:', k)
         print(stats.describe(v))
+
+
+def plot_hierarchy_clustering(test_data, id_user_dic):
+    row_clusters = linkage(test_data, method='complete', metric='euclidean')
+
+    tmp_label = []
+    for i in range(len(id_user_dic)):
+        tmp_label.append(id_user_dic[i])
+
+    row_denr = dendrogram(row_clusters, labels=tmp_label)
+    plt.tight_layout()
+    plt.ylabel('euclid')
+    plt.show()
+
 
 
 with open('./Online_Retail_Large.csv') as f:
@@ -179,6 +196,15 @@ with open('./Online_Retail_Large.csv') as f:
     #plot_elbow(user_product_vec_li)
 
     test_data = np.array(user_product_vec_li)
-    km = KMeans(n_clusters=2, n_init=10, max_iter=20).fit(test_data)
-    analyze_cluster_keywords(km.labels_, product_id_name_dic, user_product_dic, id_user_dic)
-    analyze_clusters_product_count(km.labels_, user_product_dic, id_user_dic)
+    #km = KMeans(n_clusters=2, n_init=10, max_iter=20).fit(test_data)
+    #analyze_cluster_keywords(km.labels_, product_id_name_dic, user_product_dic, id_user_dic)
+    #analyze_clusters_product_count(km.labels_, user_product_dic, id_user_dic)
+
+    #plot_hierarchy_clustering(test_data, id_user_dic)
+
+    # 계층적 군집화
+    ward = AgglomerativeClustering(n_clusters=2, affinity='euclidean', linkage='ward')
+    ward.fit(test_data)
+
+    print(Counter(ward.labels_))
+    analyze_cluster_keywords(ward.labels_, product_id_name_dic, user_product_dic, id_user_dic)
