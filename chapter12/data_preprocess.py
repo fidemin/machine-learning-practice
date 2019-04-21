@@ -5,24 +5,7 @@ from scipy import stats
 import requests
 from requests.exceptions import MissingSchema
 
-def read_data_with_primary_key(fname, delim):
-    li = []
-
-    count = 1
-    with codecs.open(fname, 'r', encoding='latin-1') as f:
-        for line in f:
-            row = line.strip().split(delim)
-            pkey = int(row[0])
-
-            if count != pkey:
-                print('errors at data_id')
-            count += 1
-
-            li.append(row[1:])
-
-    print('rows in %s: %d' % (fname, len(li)))
-    return li
-
+from common import read_data_with_primary_key
 
 if __name__ == "__main__":
     user_info_li = read_data_with_primary_key('./data/u.user', '|')
@@ -39,4 +22,21 @@ if __name__ == "__main__":
         R[user_idx, movie_idx] = float(rating)
 
     #print(R[0, 10])
+
+    user_mean_li = []
+    for i in range(0, R.shape[0]):
+        user_rating = [x for x in R[i] if x > 0.0]
+        user_mean_li.append(stats.describe(user_rating).mean)
+
+    print("user mean stats:", stats.describe(user_mean_li))
+
+    movie_mean_li = []
+
+    R_T = R.T
+    for i in range(0, R.shape[1]):
+        movie_rating = [x for x in R_T[i] if x>0.0]
+        movie_mean_li.append(stats.describe(movie_rating).mean)
+
+    print("movie_mean_stats:", stats.describe(movie_mean_li))
+
 
