@@ -7,7 +7,7 @@ from requests.exceptions import MissingSchema
 
 from common import read_data_with_primary_key
 
-if __name__ == "__main__":
+def data_preprocessing():
     user_info_li = read_data_with_primary_key('./data/u.user', '|')
     movie_info_li = read_data_with_primary_key('./data/u.item', '|')
 
@@ -21,8 +21,13 @@ if __name__ == "__main__":
         # R[x, y] is same as R[(x, y)]
         R[user_idx, movie_idx] = float(rating)
 
-    #print(R[0, 10])
+    return user_info_li, movie_info_li, R
 
+
+user_info_li, movie_info_li, R = data_preprocessing()
+
+
+if __name__ == "__main__":
     user_mean_li = []
     for i in range(0, R.shape[0]):
         user_rating = [x for x in R[i] if x > 0.0]
