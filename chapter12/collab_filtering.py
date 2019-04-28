@@ -1,9 +1,15 @@
 import numpy as np
 from sklearn.metrics import mean_squared_error
 
-from data_preprocess import R
+from data_preprocess import R, W, train_test_split, movie_info_li
 
-def compute_ALS(R, n_iter, lambda_, k):
+def get_test_mse(true, pred):
+    pred = pred[true.nonzero()].flatten()
+    true = true[true.nonzero()].flatten()
+    return mean_squared_error(true, pred)
+
+
+def compute_ALS(R, test, n_iter, lambda_, k):
     m, n = R.shape
 
     X = 5 * np.random.rand(m, k)
@@ -14,23 +20,19 @@ def compute_ALS(R, n_iter, lambda_, k):
     for i in range(0, n_iter):
         X = np.linalg.solve(np.dot(Y, Y.T) + lambda_ * np.eye(k), np.dot(Y, R.T)).T
         Y = np.linalg.solve(np.dot(X.T, X) + lambda_ * np.eye(k), np.dot(X.T, R))
-
-        errors.append(mean_squared_error(R, np.dot(X, Y)))
-        print(mean_squared_error(R, np.dot(X, Y)))
+        #errors.append(mean_squared_error(R, np.dot(X, Y)))
+        errors.append(get_test_mse(np.dot(X, Y), test))
 
     R_hat = np.dot(X, Y)
-    print('Error of rated movies: %f ' % mean_squared_error(R, np.dot(X, Y)))
-    print(R_hat, errors)
+    #print('Error of rated movies: %f ' % mean_squared_error(R, np.dot(X, Y)))
+    print('Error of rated movies: %f ' % get_test_mse(np.dot(X,Y), test))
+    return R_hat, errors
 
-def compute_wALS(R, n_iter, lambda_, k):
+def compute_wALS(R, W, n_iter, lambda_, k):
     m, n = R.shape
 
     X = np.random.rand(m, k)
     Y = np.random.rand(k, n)
-
-    W = R > 0.0
-    W[W == True] = 1
-    W[W == False] = 0
 
     weighted_errors = []
 
@@ -80,11 +82,31 @@ def compute_GD(R, n_iter, lambda_, learning_rate, k):
     return (R_hat, errors)
 
 
-
+def recomment_by_user(user, R_hat, W):
+    R_hat -= np.min(R_hat)
+    R_hat *= float(5) / np.max(R_hat)
+    user_index = user - 1
+    user_seen_movies = sorted(list(enumerate(R_hat[user_index])), key = lambda x:x[1], reverse=True)
+    print(user_seen_movies[:10])
+    recommended = 1
+    print("------recommendation for user %d ------" % user)
+    for movie_info in user_seen_movies:
+        if W[user_index][movie_info[0]]==0:
+            movie_title = movie_info_li[movie_info[0]]
+            movie_score = movie_info[1]
+            print("rank %d recommendation:%s(%.3f)" % (recommended, movie_title[0], movie_score))
+            recommended += 1
+            if recommended == 6:
+                break
 
 
 if __name__ == "__main__":
     k = 100 # 요인 행렬 크기. 100을 보통 사용한다.
     #compute_ALS(R, 20, 0.1, k)
-    #compute_wALS(R, 10, 0.1, k)
-    R_hat, errors = compute_GD(R, 40, 1, 0.001, k)
+    #compute_wALS(R,W, 10, 0.1, k)
+    #R_hat, errors = compute_GD(R, 40, 1, 0.001, k)
+    train, test = train_test_split(R, 10)
+    #R_hat, train_errors = compute_ALS(train, train, 20, 0.1, 100)
+    #print(train_errors)
+    R_hat, train_errors = compute_ALS(train, test, 20, 500, 100)
+    recomment_by_user(1, R_hat, W)

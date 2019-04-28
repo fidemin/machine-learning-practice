@@ -21,10 +21,31 @@ def data_preprocessing():
         # R[x, y] is same as R[(x, y)]
         R[user_idx, movie_idx] = float(rating)
 
-    return user_info_li, movie_info_li, R
+    W = R > 0.0
+    W[W == True] = 1
+    W[W == False] = 0
+
+    return user_info_li, movie_info_li, R, W
 
 
-user_info_li, movie_info_li, R = data_preprocessing()
+def train_test_split(R, n_test):
+    train = R.copy()
+
+    test = np.zeros(R.shape)
+    for user in range(R.shape[0]):
+        nonzeros =  R[user, :].nonzero()[0]
+        test_index = np.random.choice(
+            nonzeros, size=n_test, replace=False
+        )
+        #print(test_index)
+
+        train[user, test_index] = 0
+        test[user, test_index] = R[user, test_index]
+
+    return (train, test)
+
+
+user_info_li, movie_info_li, R, W = data_preprocessing()
 
 
 if __name__ == "__main__":
