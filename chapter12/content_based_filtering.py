@@ -11,6 +11,8 @@ from common import read_data_with_primary_key
 
 def similar_recommend_by_movie_id(X, movie_sim, movie_info_li, movielens_id):
     movie_idx = movielens_id - 1
+    # 원본의 idx를 기억하기 위하여, enumerate를 쓴다. 
+    # [(리스트 익덱스 0, 유사도0), ...] 형태의 데이터가 들어있다.
     similar_movies = sorted(list(enumerate(movie_sim[movie_idx])), key=lambda x:x[1], reverse=True)
     recommended = 1
     print("------ recommendation for movie %d ------" % movielens_id)

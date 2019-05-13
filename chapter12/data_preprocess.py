@@ -18,9 +18,11 @@ def data_preprocessing():
         user, movie, rating, date = line.strip().split('\t')
         user_idx = int(user) - 1
         movie_idx = int(movie) - 1
-        # R[x, y] is same as R[(x, y)]
+        # R[x, y]은 R[(x, y)]와 동일하다.
         R[user_idx, movie_idx] = float(rating)
 
+    # Utility 행렬과 사이즈가 같은
+    # 사용자 별점 정보가 있으면 1, 없으면 0인 행렬을 만든다.
     W = R > 0.0
     W[W == True] = 1
     W[W == False] = 0
@@ -54,6 +56,7 @@ if __name__ == "__main__":
         user_rating = [x for x in R[i] if x > 0.0]
         user_mean_li.append(stats.describe(user_rating).mean)
 
+    # 유저 별 평균 영화 평점의 분포 정보를 알 수 있다.
     print("user mean stats:", stats.describe(user_mean_li))
 
     movie_mean_li = []
@@ -63,6 +66,7 @@ if __name__ == "__main__":
         movie_rating = [x for x in R_T[i] if x>0.0]
         movie_mean_li.append(stats.describe(movie_rating).mean)
 
+    # 영화 별 평균 영화 평점의 분포 정도를 알 수 있다.
     print("movie_mean_stats:", stats.describe(movie_mean_li))
 
 
