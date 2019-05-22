@@ -1,2 +1,2 @@
-# first-machine-learning
-My first machine learning examples
+# machine-learning-practic3
+Machine learning practice
