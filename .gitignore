@@ -118,3 +118,9 @@ venv.bak/
 # data
 *.data
 **/data/my_submission.csv
+
+# pycharm
+.idea
+
+# tensorflow outputs
+**/checkpoints/**
